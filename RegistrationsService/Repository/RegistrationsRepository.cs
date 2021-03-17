@@ -33,25 +33,39 @@ namespace RegistrationsService.Repository
             _dependencies = dependencies.Value;
         }
 
-        public void RegisterDashboard()
+        public void RegisterScreenApp(RegistrationDto registrationDto)
         {
             
         }
 
-        private async Task<dynamic> SignUp(RegistrationDto registrationDto)
+        private void Register(RegistrationDto registrationDto)
         {
-            try
-            {
-                if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
-                    throw new ArgumentNullException(CommonMessage.PassValidData);
+            if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
+                throw new ArgumentNullException(CommonMessage.PassValidData);
 
-                IRestResponse postUser = PostAPI();
-
-            }
-            catch (Exception ex)
+            UsersDto userDto = new UsersDto
             {
-                return ReturnResponse.ErrorResponse(CommonMessage.ExceptionMessage + ex.Message, StatusCodes.Status400BadRequest);
-            }
+                Name = registrationDto.Name,
+                PhoneNumber = registrationDto.PhoneNumber
+            };
+            IRestResponse postedUser = PostAPI(_dependencies.UsersUrl, userDto);
+            if (postedUser.StatusCode != HttpStatusCode.Created)
+                throw new Exception();
+
+            var userData = JsonConvert.DeserializeObject<PostUserData>(postedUser.Content);
+
+            IdentitiesDto identityDto = new IdentitiesDto
+            {
+                UserId = userData.UserId,
+                Email = registrationDto.Email,
+                PhoneNumber = registrationDto.PhoneNumber,
+                Password = registrationDto.Password,
+                // Roles = registrationDto.
+            };
+            IRestResponse postedIdentity = PostAPI(_dependencies.IdentitiesUrl, identityDto);
+            if (postedIdentity.StatusCode != HttpStatusCode.Created)
+                throw new Exception();
+
         }
 
         private IRestResponse PostAPI(string url, dynamic objectToSend)

@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace RegistrationsService.Models.ResponseModel
+﻿namespace RegistrationsService.Models.ResponseModel
 {
     public class RegistrationDto
     {
@@ -8,6 +6,5 @@ namespace RegistrationsService.Models.ResponseModel
         public string PhoneNumber { get; set; }
         public string Password { get; set; }
         public string Name { get; set; }
-        public string InstitutionId { get; set; }
     }
 }

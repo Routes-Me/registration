@@ -1,7 +1,9 @@
+using RegistrationsService.Models.ResponseModel;
+
 namespace RegistrationsService.Abstraction
 {
     public interface IRegistrationsRepository
     {
-        void RegisterDashboard();
+        void RegisterScreenApp(RegistrationDto registrationDto);
     }
 }

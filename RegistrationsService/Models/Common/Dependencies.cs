@@ -2,7 +2,8 @@
 {
     public class Dependencies
     {
-        public string PostUserUrl { get; set; }
+        public string UsersUrl { get; set; }
+        public string IdentitiesUrl { get; set; }
     }
 }
         
