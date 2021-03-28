@@ -4,7 +4,6 @@ using RegistrationsService.Models.DBModels;
 using RegistrationsService.Models.ResponseModel;
 using RegistrationsService.Models.Common;
 using System;
-using Encryption;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -24,7 +23,6 @@ namespace RegistrationsService.Repository
         private readonly RegistrationsServiceContext _context;
         private readonly AppSettings _appSettings;
         private readonly Dependencies _dependencies;
-        EncryptionClass encryption = new EncryptionClass();
 
         public RegistrationsRepository(IOptions<AppSettings> appSettings, RegistrationsServiceContext context, IOptions<Dependencies> dependencies)
         {
@@ -33,12 +31,12 @@ namespace RegistrationsService.Repository
             _dependencies = dependencies.Value;
         }
 
-        public void RegisterScreenApp(RegistrationDto registrationDto)
+        public async Task RegisterScreenApp(RegistrationDto registrationDto)
         {
-            
+            await Register(registrationDto, "screen", "user");
         }
 
-        private void Register(RegistrationDto registrationDto)
+        private Task Register(RegistrationDto registrationDto, string application, string privilege)
         {
             if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
                 throw new ArgumentNullException(CommonMessage.PassValidData);
@@ -48,11 +46,8 @@ namespace RegistrationsService.Repository
                 Name = registrationDto.Name,
                 PhoneNumber = registrationDto.PhoneNumber
             };
-            IRestResponse postedUser = PostAPI(_dependencies.UsersUrl, userDto);
-            if (postedUser.StatusCode != HttpStatusCode.Created)
-                throw new Exception();
-
-            var userData = JsonConvert.DeserializeObject<PostUserData>(postedUser.Content);
+            IRestResponse postedUserResponse = PostAPI(_dependencies.UsersUrl, userDto);
+            var userData = JsonConvert.DeserializeObject<UserData>(postedUserResponse.Content);
 
             IdentitiesDto identityDto = new IdentitiesDto
             {
@@ -60,12 +55,18 @@ namespace RegistrationsService.Repository
                 Email = registrationDto.Email,
                 PhoneNumber = registrationDto.PhoneNumber,
                 Password = registrationDto.Password,
-                // Roles = registrationDto.
+                Roles = new RolesDto { Application = application, Privilege = privilege}
             };
-            IRestResponse postedIdentity = PostAPI(_dependencies.IdentitiesUrl, identityDto);
-            if (postedIdentity.StatusCode != HttpStatusCode.Created)
-                throw new Exception();
-
+            try
+            {
+                PostAPI(_dependencies.IdentitiesUrl, identityDto);
+            }
+            catch (Exception)
+            {
+                DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userData.UserId);
+                throw;
+            }
+            return Task.CompletedTask;
         }
 
         private IRestResponse PostAPI(string url, dynamic objectToSend)
@@ -75,6 +76,16 @@ namespace RegistrationsService.Repository
             string jsonToSend = JsonConvert.SerializeObject(objectToSend);
             request.AddParameter("application/json; charset=utf-8", jsonToSend, ParameterType.RequestBody);
             request.RequestFormat = DataFormat.Json;
+            IRestResponse response = client.Execute(request);
+            if (response.StatusCode != HttpStatusCode.Created)
+                throw new Exception(response.Content);
+            return response;
+        }
+
+        private IRestResponse DeleteAPI(string url)
+        {
+            var client = new RestClient(url);
+            var request = new RestRequest(Method.DELETE);
             return client.Execute(request);
         }
     }

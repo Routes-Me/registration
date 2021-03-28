@@ -2,7 +2,7 @@
 {
     public class RolesDto
     {
-        public string ApplicationId { get; set; }
-        public string PrivilegeId { get; set; }
+        public string Application { get; set; }
+        public string Privilege { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using RegistrationsService.Abstraction;
 using RegistrationsService.Models;
 using RegistrationsService.Models.ResponseModel;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace RegistrationsService.Controllers
 {
-    [Route("api")]
+    [Route("v1")]
     [ApiController]
     public class RegistrationsController : ControllerBase
     {
@@ -19,11 +20,11 @@ namespace RegistrationsService.Controllers
 
         [HttpPost]
         [Route("registrations/screen-app")]
-        public IActionResult RegisterScreenApp(RegistrationDto registrationDto)
+        public async Task<IActionResult> RegisterScreenApp(RegistrationDto registrationDto)
         {
             try
             {
-                _registrationsRepository.RegisterScreenApp(registrationDto);
+                await _registrationsRepository.RegisterScreenApp(registrationDto);
             }
             catch (ArgumentNullException ex)
             {

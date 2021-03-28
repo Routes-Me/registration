@@ -50,6 +50,8 @@ namespace RegistrationsService
 
             var appSettingsSection = Configuration.GetSection("AppSettings");
             var appSettings = appSettingsSection.Get<AppSettings>();
+            var dependenciessSection = Configuration.GetSection("Dependencies");
+            services.Configure<Dependencies>(dependenciessSection);
             services.AddScoped<IRegistrationsRepository, RegistrationsRepository>();
         }
 

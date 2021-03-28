@@ -5,7 +5,7 @@
         public string Message { get; set; }
     }
 
-    public class PostUserData
+    public class UserData
     {
         public string UserId { get; set; }
     }

@@ -1,9 +1,10 @@
 using RegistrationsService.Models.ResponseModel;
+using System.Threading.Tasks;
 
 namespace RegistrationsService.Abstraction
 {
     public interface IRegistrationsRepository
     {
-        void RegisterScreenApp(RegistrationDto registrationDto);
+        Task RegisterScreenApp(RegistrationDto registrationDto);
     }
 }
