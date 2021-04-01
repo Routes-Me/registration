@@ -35,7 +35,7 @@ namespace RegistrationsService.Controllers
             {
                 return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
             }
-            return StatusCode(StatusCodes.Status200OK, CommonMessage.ScreenAppRegistered);
+            return StatusCode(StatusCodes.Status201Created, CommonMessage.ScreenAppRegistered);
         }
 
         [HttpPost]
@@ -54,7 +54,26 @@ namespace RegistrationsService.Controllers
             {
                 return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
             }
-            return StatusCode(StatusCodes.Status200OK, CommonMessage.DashboardRegistered);
+            return StatusCode(StatusCodes.Status201Created, CommonMessage.DashboardRegistered);
+        }
+
+        [HttpPost]
+        [Route("registrations/routes-pay-app")]
+        public async Task<IActionResult> RegisterRoutesPayApp(RegistrationDto registrationDto)
+        {
+            try
+            {
+                await _registrationsRepository.RegisterRoutesPayApp(registrationDto);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+            }
+            return StatusCode(StatusCodes.Status201Created, CommonMessage.RoutesPayAppRegistered);
         }
     }
 }
