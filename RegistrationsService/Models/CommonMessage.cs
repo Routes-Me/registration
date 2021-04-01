@@ -7,5 +7,6 @@
         public static string RoleMissed = "Pass a valid role.";
         public static string ScreenAppRegistered = "Screen app registered successfuly.";
         public static string DashboardRegistered = "Dashboard registered successfuly.";
+        public static string RoutesPayAppRegistered = "Routes pay app registered successfuly.";
     }
 }

@@ -7,5 +7,6 @@ namespace RegistrationsService.Abstraction
     {
         Task RegisterScreenApp(RegistrationDto registrationDto);
         Task RegisterDashboard(RegistrationDto registrationDto);
+        Task RegisterRoutesPayApp(RegistrationDto registrationDto);
     }
 }
