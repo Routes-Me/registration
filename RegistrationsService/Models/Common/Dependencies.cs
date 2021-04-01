@@ -1,0 +1,9 @@
+﻿namespace RegistrationsService.Models.Common
+{
+    public class Dependencies
+    {
+        public string UsersUrl { get; set; }
+        public string IdentitiesUrl { get; set; }
+    }
+}
+        
