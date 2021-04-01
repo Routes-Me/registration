@@ -9,8 +9,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System;
 
 namespace RegistrationsService
 {
@@ -53,6 +53,13 @@ namespace RegistrationsService
             var dependenciessSection = Configuration.GetSection("Dependencies");
             services.Configure<Dependencies>(dependenciessSection);
             services.AddScoped<IRegistrationsRepository, RegistrationsRepository>();
+
+            services.AddApiVersioning(config =>
+            {
+                config.DefaultApiVersion = new ApiVersion(1, 0);
+                config.AssumeDefaultVersionWhenUnspecified = true;
+                config.ReportApiVersions = true;
+            });
         }
 
 

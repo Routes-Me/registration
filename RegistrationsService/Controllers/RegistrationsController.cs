@@ -8,8 +8,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace RegistrationsService.Controllers
 {
-    [Route("v1")]
     [ApiController]
+    [ApiVersion( "1.0" )]
+    [Route("v{version:apiVersion}/")]
     public class RegistrationsController : ControllerBase
     {
         private readonly IRegistrationsRepository _registrationsRepository;
@@ -28,13 +29,32 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
             }
             return StatusCode(StatusCodes.Status200OK, CommonMessage.ScreenAppRegistered);
+        }
+
+        [HttpPost]
+        [Route("registrations/dashboard-app")]
+        public async Task<IActionResult> RegisterDashboard(RegistrationDto registrationDto)
+        {
+            try
+            {
+                await _registrationsRepository.RegisterDashboard(registrationDto);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+            }
+            return StatusCode(StatusCodes.Status200OK, CommonMessage.DashboardRegistered);
         }
     }
 }

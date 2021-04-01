@@ -6,5 +6,6 @@ namespace RegistrationsService.Abstraction
     public interface IRegistrationsRepository
     {
         Task RegisterScreenApp(RegistrationDto registrationDto);
+        Task RegisterDashboard(RegistrationDto registrationDto);
     }
 }

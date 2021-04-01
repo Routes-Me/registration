@@ -36,6 +36,13 @@ namespace RegistrationsService.Repository
             await Register(registrationDto, "screen", "user");
         }
 
+        public async Task RegisterDashboard(RegistrationDto registrationDto)
+        {
+            if (string.IsNullOrEmpty(registrationDto.Role))
+                throw new ArgumentNullException(CommonMessage.RoleMissed);
+            await Register(registrationDto, "dashboard", registrationDto.Role);
+        }
+
         private Task Register(RegistrationDto registrationDto, string application, string privilege)
         {
             if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
