@@ -41,6 +41,11 @@ namespace RegistrationsService.Repository
             await Register(registrationDto, "routes pay", "user");
         }
 
+        public async Task RegisterDriverApp(RegistrationDto registrationDto)
+        {
+            await Register(registrationDto, "driver", "user");
+        }
+
         public async Task RegisterDashboard(RegistrationDto registrationDto)
         {
             if (string.IsNullOrEmpty(registrationDto.Role))

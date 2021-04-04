@@ -75,5 +75,24 @@ namespace RegistrationsService.Controllers
             }
             return StatusCode(StatusCodes.Status201Created, CommonMessage.RoutesPayAppRegistered);
         }
+
+        [HttpPost]
+        [Route("registrations/driver-app")]
+        public async Task<IActionResult> RegisterDriverApp(RegistrationDto registrationDto)
+        {
+            try
+            {
+                await _registrationsRepository.RegisterDriverApp(registrationDto);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+            }
+            return StatusCode(StatusCodes.Status201Created, CommonMessage.DriverAppRegistered);
+        }
     }
 }
