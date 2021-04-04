@@ -8,5 +8,8 @@
         public static string ScreenAppRegistered = "Screen app registered successfuly.";
         public static string DashboardRegistered = "Dashboard registered successfuly.";
         public static string RoutesPayAppRegistered = "Routes pay app registered successfuly.";
+        public static string DriverAppRegistered = "Driver app registered successfuly.";
+        public static string BusValidatorRegistered = "Bus validator registered successfuly.";
+        public static string EnterprisePromotionAppRegistered = "Enterprise promotion app registered successfuly.";
     }
 }
