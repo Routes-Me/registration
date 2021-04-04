@@ -48,7 +48,12 @@ namespace RegistrationsService.Repository
 
         public async Task RegisterBusValidators(RegistrationDto registrationDto)
         {
-            await Register(registrationDto, "bus-validator", "user");
+            await Register(registrationDto, "bus validator", "user");
+        }
+
+        public async Task RegisterEnterprisePromotionApp(RegistrationDto registrationDto)
+        {
+            await Register(registrationDto, "enterprise promotion", "user");
         }
 
         public async Task RegisterDashboard(RegistrationDto registrationDto)

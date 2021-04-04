@@ -113,5 +113,24 @@ namespace RegistrationsService.Controllers
             }
             return StatusCode(StatusCodes.Status201Created, CommonMessage.BusValidatorRegistered);
         }
+
+        [HttpPost]
+        [Route("registrations/enterprise-promotion-app")]
+        public async Task<IActionResult> RegisterEnterprisePromotionApp(RegistrationDto registrationDto)
+        {
+            try
+            {
+                await _registrationsRepository.RegisterEnterprisePromotionApp(registrationDto);
+            }
+            catch (ArgumentNullException ex)
+            {
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+            }
+            return StatusCode(StatusCodes.Status201Created, CommonMessage.EnterprisePromotionAppRegistered);
+        }
     }
 }
