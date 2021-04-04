@@ -9,5 +9,6 @@ namespace RegistrationsService.Abstraction
         Task RegisterDashboard(RegistrationDto registrationDto);
         Task RegisterRoutesPayApp(RegistrationDto registrationDto);
         Task RegisterDriverApp(RegistrationDto registrationDto);
+        Task RegisterBusValidators(RegistrationDto registrationDto);
     }
 }
