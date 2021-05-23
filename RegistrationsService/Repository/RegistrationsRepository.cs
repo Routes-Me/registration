@@ -9,7 +9,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Newtonsoft.Json;
-using Obfuscation;
 using RestSharp;
 using System.Collections.Generic;
 using System.Linq;
@@ -71,6 +70,7 @@ namespace RegistrationsService.Repository
             UsersDto userDto = new UsersDto
             {
                 Name = registrationDto.Name,
+                Email = registrationDto.Email,
                 PhoneNumber = registrationDto.PhoneNumber
             };
             IRestResponse postedUserResponse = PostAPI(_dependencies.UsersUrl, userDto);
