@@ -62,7 +62,7 @@ namespace RegistrationsService.Repository
             await Register(registrationDto, "dashboard", registrationDto.Role);
         }
 
-        private Task Register(RegistrationDto registrationDto, string application, string privilege)
+        private  Task Register(RegistrationDto registrationDto, string application, string privilege)
         {
             if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
                 throw new ArgumentNullException(CommonMessage.PassValidData);
@@ -74,23 +74,51 @@ namespace RegistrationsService.Repository
                 PhoneNumber = registrationDto.PhoneNumber
             };
             IRestResponse postedUserResponse = PostAPI(_dependencies.UsersUrl, userDto);
-            var userData = JsonConvert.DeserializeObject<UserData>(postedUserResponse.Content);
+            UsersResponse userResponse = JsonConvert.DeserializeObject<UsersResponse>(postedUserResponse.Content);
 
             IdentitiesDto identityDto = new IdentitiesDto
             {
-                UserId = userData.UserId,
+                UserId = userResponse.UserId,
                 Email = registrationDto.Email,
                 PhoneNumber = registrationDto.PhoneNumber,
                 Password = registrationDto.Password,
                 Roles = new RolesDto { Application = application, Privilege = privilege}
             };
+            IdentitiesResponse identityResponse = new IdentitiesResponse();
             try
             {
-                PostAPI(_dependencies.IdentitiesUrl, identityDto);
+                IRestResponse postedIdentityResponse = PostAPI(_dependencies.IdentitiesUrl, identityDto);
+                identityResponse = JsonConvert.DeserializeObject<IdentitiesResponse>(postedIdentityResponse.Content);
             }
             catch (Exception)
             {
-                DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userData.UserId);
+                DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
+                throw;
+            }
+
+            if (!string.IsNullOrEmpty(registrationDto.Role))
+            {
+                PostOfficer(userResponse.UserId, identityResponse.IdentityId, registrationDto.InstitutionId);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Task PostOfficer(string userId, string identityId, string institutionId)
+        {
+            OfficersDto officersDto = new OfficersDto
+            {
+                UserId = userId,
+                InstitutionId = institutionId
+            };
+            try
+            {
+                PostAPI(_dependencies.OfficersUrl, officersDto);
+            }
+            catch (Exception)
+            {
+                DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userId);
+                DeleteAPI(_appSettings.Host + _dependencies.IdentitiesUrl + identityId);
                 throw;
             }
             return Task.CompletedTask;

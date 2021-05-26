@@ -1,12 +1,22 @@
 ﻿namespace RegistrationsService.Models
 {
-    public class RegisterDashboardResponse
+    public class SuccessResponse
     {
-        public string Message { get; set; }
+        public string message { get; set; }
     }
 
-    public class UserData
+    public class ErrorResponse
+    {
+        public string error { get; set; }
+    }
+
+    public class UsersResponse
     {
         public string UserId { get; set; }
+    }
+
+    public class IdentitiesResponse
+    {
+        public string IdentityId { get; set; }
     }
 }
