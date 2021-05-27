@@ -4,6 +4,7 @@
     {
         public string UsersUrl { get; set; }
         public string IdentitiesUrl { get; set; }
+        public string OfficersUrl { get; set; }
     }
 }
         

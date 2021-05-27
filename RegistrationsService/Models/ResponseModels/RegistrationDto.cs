@@ -13,5 +13,7 @@ namespace RegistrationsService.Models.ResponseModel
         [Range(typeof(string), "manager", "officer", ErrorMessage = "Invalid value for role")]
         [AllowNull]
         public string Role { get; set; }
+        [AllowNull]
+        public string InstitutionId { get; set; }
     }
 }

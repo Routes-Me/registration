@@ -29,13 +29,13 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error = ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, CommonMessage.ScreenAppRegistered);
+            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.ScreenAppRegistered});
         }
 
         [HttpPost]
@@ -48,13 +48,13 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error = ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, CommonMessage.DashboardRegistered);
+            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.DashboardRegistered });
         }
 
         [HttpPost]
@@ -67,13 +67,13 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error = ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, CommonMessage.RoutesPayAppRegistered);
+            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.RoutesPayAppRegistered });
         }
 
         [HttpPost]
@@ -86,13 +86,13 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error = ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, CommonMessage.DriverAppRegistered);
+            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.DriverAppRegistered });
         }
 
         [HttpPost]
@@ -105,13 +105,13 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error =  ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, CommonMessage.BusValidatorRegistered);
+            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.BusValidatorRegistered });
         }
 
         [HttpPost]
@@ -124,13 +124,13 @@ namespace RegistrationsService.Controllers
             }
             catch (ArgumentNullException ex)
             {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, ex.Message);
+                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
-                return StatusCode(StatusCodes.Status400BadRequest, CommonMessage.ExceptionMessage + ex.Message);
+                return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error =  ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, CommonMessage.EnterprisePromotionAppRegistered);
+            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.EnterprisePromotionAppRegistered });
         }
     }
 }
