@@ -57,24 +57,24 @@ namespace RegistrationsService.Repository
 
         public async Task RegisterDashboard(RegistrationDto registrationDto)
         {
-            if (string.IsNullOrEmpty(registrationDto.Role))
+            List<InvitationsDto> invitationsDtoList = JsonConvert.DeserializeObject<GetInvitationsResponse>(GetAPI(_dependencies.InvitationsUrl + registrationDto.InvitationId).Content).data;
+            if (!invitationsDtoList.Any())
+                throw new KeyNotFoundException(CommonMessage.InvitationNotFound);
+
+            InvitationsDto invitationsDto = invitationsDtoList.FirstOrDefault();
+            if (string.IsNullOrEmpty(invitationsDto.ApplicationId) || string.IsNullOrEmpty(invitationsDto.PrivilageId))
                 throw new ArgumentNullException(CommonMessage.RoleMissed);
-            await Register(registrationDto, "dashboard", registrationDto.Role);
+
+            registrationDto.IsDashboard = true;
+            await Register(registrationDto, invitationsDto.ApplicationId, invitationsDto.PrivilageId);
         }
 
-        private  Task Register(RegistrationDto registrationDto, string application, string privilege)
+        private async Task Register(RegistrationDto registrationDto, string application, string privilege)
         {
             if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
                 throw new ArgumentNullException(CommonMessage.PassValidData);
 
-            UsersDto userDto = new UsersDto
-            {
-                Name = registrationDto.Name,
-                Email = registrationDto.Email,
-                PhoneNumber = registrationDto.PhoneNumber
-            };
-            IRestResponse postedUserResponse = PostAPI(_dependencies.UsersUrl, userDto);
-            UsersResponse userResponse = JsonConvert.DeserializeObject<UsersResponse>(postedUserResponse.Content);
+            UsersResponse userResponse = PostUsers(registrationDto);
 
             IdentitiesDto identityDto = new IdentitiesDto
             {
@@ -96,12 +96,22 @@ namespace RegistrationsService.Repository
                 throw;
             }
 
-            if (!string.IsNullOrEmpty(registrationDto.Role))
+            if (registrationDto.IsDashboard == true)
             {
-                PostOfficer(userResponse.UserId, identityResponse.IdentityId, registrationDto.InstitutionId);
+                await PostOfficer(userResponse.UserId, identityResponse.IdentityId, registrationDto.InstitutionId);
             }
+        }
 
-            return Task.CompletedTask;
+        private UsersResponse PostUsers(RegistrationDto registrationDto)
+        {
+            UsersDto userDto = new UsersDto
+            {
+                Name = registrationDto.Name,
+                Email = registrationDto.Email,
+                PhoneNumber = registrationDto.PhoneNumber
+            };
+            IRestResponse postedUserResponse = PostAPI(_dependencies.UsersUrl, userDto);
+            return JsonConvert.DeserializeObject<UsersResponse>(postedUserResponse.Content);
         }
 
         private Task PostOfficer(string userId, string identityId, string institutionId)
@@ -142,6 +152,32 @@ namespace RegistrationsService.Repository
             var client = new RestClient(url);
             var request = new RestRequest(Method.DELETE);
             return client.Execute(request);
+        }
+
+        private dynamic GetAPI(string url, string query = "")
+        {
+            UriBuilder uriBuilder = new UriBuilder(_appSettings.Host + url);
+            uriBuilder = AppendQueryToUrl(uriBuilder, query);
+            var client = new RestClient(uriBuilder.Uri);
+            var request = new RestRequest(Method.GET);
+            IRestResponse response = client.Execute(request);
+
+            if (response.StatusCode == 0)
+                throw new HttpListenerException(400, CommonMessage.ConnectionFailure);
+
+            if (!response.IsSuccessful)
+                throw new HttpListenerException((int)response.StatusCode, response.Content);
+
+            return response;
+        }
+
+        private UriBuilder AppendQueryToUrl(UriBuilder baseUri, string queryToAppend)
+        {
+            if (baseUri.Query != null && baseUri.Query.Length > 1)
+                baseUri.Query = baseUri.Query.Substring(1) + "&" + queryToAppend;
+            else
+                baseUri.Query = queryToAppend;
+            return baseUri;
         }
     }
 }

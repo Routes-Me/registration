@@ -1,4 +1,7 @@
-﻿namespace RegistrationsService.Models
+﻿using RegistrationsService.Models.ResponseModel;
+using System.Collections.Generic;
+
+namespace RegistrationsService.Models
 {
     public class SuccessResponse
     {
@@ -18,5 +21,11 @@
     public class IdentitiesResponse
     {
         public string IdentityId { get; set; }
+    }
+
+    public class GetInvitationsResponse
+    {
+        public Pagination pagination { get; set; }
+        public List<InvitationsDto> data { get; set; }
     }
 }
