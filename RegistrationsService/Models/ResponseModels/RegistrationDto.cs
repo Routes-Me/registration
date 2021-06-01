@@ -11,6 +11,6 @@
 
         public string? InstitutionId { get; set; }
         public string? InvitationId { get; set; }
-        public bool? isDashboard { get; set; }
+        public bool? IsDashboard { get; set; }
     }
 }
