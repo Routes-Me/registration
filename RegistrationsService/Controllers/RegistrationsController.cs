@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using RegistrationsService.Abstraction;
 using RegistrationsService.Models;
 using RegistrationsService.Models.ResponseModel;
@@ -49,6 +50,10 @@ namespace RegistrationsService.Controllers
             catch (ArgumentNullException ex)
             {
                 return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new ErrorResponse{ error = ex.Message });
             }
             catch (Exception ex)
             {
