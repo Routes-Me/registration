@@ -65,7 +65,7 @@ namespace RegistrationsService.Repository
             if (string.IsNullOrEmpty(invitationsDto.ApplicationId) || string.IsNullOrEmpty(invitationsDto.PrivilageId))
                 throw new ArgumentNullException(CommonMessage.RoleMissed);
 
-            registrationDto.isDashboard = true;
+            registrationDto.IsDashboard = true;
             await Register(registrationDto, invitationsDto.ApplicationId, invitationsDto.PrivilageId);
         }
 
@@ -96,7 +96,7 @@ namespace RegistrationsService.Repository
                 throw;
             }
 
-            if (registrationDto.isDashboard == true)
+            if (registrationDto.IsDashboard == true)
             {
                 await PostOfficer(userResponse.UserId, identityResponse.IdentityId, registrationDto.InstitutionId);
             }
