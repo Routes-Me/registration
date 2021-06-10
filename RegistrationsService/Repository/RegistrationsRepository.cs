@@ -66,12 +66,12 @@ namespace RegistrationsService.Repository
                 throw new ArgumentNullException(CommonMessage.RoleMissed);
 
             registrationDto.IsDashboard = true;
-            await Register(registrationDto, invitationsDto.ApplicationId, invitationsDto.PrivilageId);
+            await Register(registrationDto, invitationsDto.ApplicationId, invitationsDto.PrivilageId, invitationsDto.InstitutionId);
         }
 
-        private async Task Register(RegistrationDto registrationDto, string application, string privilege)
+        private async Task Register(RegistrationDto registrationDto, string application, string privilege, string institutionId = "")
         {
-            if (registrationDto == null || string.IsNullOrEmpty(registrationDto.PhoneNumber) || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
+            if (registrationDto == null || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
                 throw new ArgumentNullException(CommonMessage.PassValidData);
 
             UsersResponse userResponse = PostUsers(registrationDto);
@@ -98,7 +98,7 @@ namespace RegistrationsService.Repository
 
             if (registrationDto.IsDashboard == true)
             {
-                await PostOfficer(userResponse.UserId, identityResponse.IdentityId, registrationDto.InstitutionId);
+                await PostOfficer(userResponse.UserId, identityResponse.IdentityId, institutionId);
             }
         }
 
