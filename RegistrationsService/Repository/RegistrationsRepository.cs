@@ -44,14 +44,8 @@ namespace RegistrationsService.Repository
 
         public async Task RegisterDriverApp(RegistrationDto registrationDto)
         {
-            
-            List<InvitationsDto> invitationsDtoList = JsonConvert.DeserializeObject<GetInvitationsResponse>(GetAPI(_dependencies.InvitationsUrl + registrationDto.InvitationId).Content).data;
-            if (!invitationsDtoList.Any())
-                throw new KeyNotFoundException(CommonMessage.InvitationNotFound);
 
-            InvitationsDto invitationsDto = invitationsDtoList.FirstOrDefault();
-            if (string.IsNullOrEmpty(invitationsDto.ApplicationId) || string.IsNullOrEmpty(invitationsDto.PrivilageId))
-                throw new ArgumentNullException(CommonMessage.RoleMissed);
+            InvitationsDto invitationsDto = GetInvitation(registrationDto);
 
             registrationDto.InstitutionId = invitationsDto.InstitutionId;
             await Register(registrationDto, "driver", "user" , invitationsDto.InstitutionId);
@@ -69,78 +63,73 @@ namespace RegistrationsService.Repository
 
         public async Task RegisterDashboard(RegistrationDto registrationDto)
         {
-            List<InvitationsDto> invitationsDtoList = JsonConvert.DeserializeObject<GetInvitationsResponse>(GetAPI(_dependencies.InvitationsUrl + registrationDto.InvitationId).Content).data;
-            if (!invitationsDtoList.Any())
-                throw new KeyNotFoundException(CommonMessage.InvitationNotFound);
-
-            InvitationsDto invitationsDto = invitationsDtoList.FirstOrDefault();
-            if (string.IsNullOrEmpty(invitationsDto.ApplicationId) || string.IsNullOrEmpty(invitationsDto.PrivilageId))
-                throw new ArgumentNullException(CommonMessage.RoleMissed);
+            InvitationsDto invitationsDto = GetInvitation(registrationDto);
             registrationDto.IsDashboard = true;
             await Register(registrationDto, invitationsDto.ApplicationId, invitationsDto.PrivilageId, invitationsDto.InstitutionId);
         }
 
         private async Task Register(RegistrationDto registrationDto, string application, string privilege, string institutionId = "")
         {
-            if(application == "driver")
+
+            if(registrationDto != null && !string.IsNullOrEmpty(registrationDto.Email) && !string.IsNullOrEmpty(registrationDto.Name))
             {
-                if (registrationDto == null || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Name) || string.IsNullOrEmpty(registrationDto.phone.number))
-                    throw new ArgumentNullException(CommonMessage.PassValidData);
-
-                registrationDto.PhoneNumber = registrationDto.phone.number;
-                UsersResponse userResponse = PostUsers(registrationDto);
-
-                DriverDto Driver = new DriverDto
+                if(string.IsNullOrEmpty(registrationDto.Password) && !string.IsNullOrEmpty(registrationDto.phone.number) && application == "driver")
                 {
-                    User_Id = userResponse.UserId,
-                    Institution_Id = registrationDto.InstitutionId,
-                    avatarUrl = registrationDto.avatarUrl
-                };
+                    registrationDto.PhoneNumber = registrationDto.phone.number;
+                    UsersResponse userResponse = PostUsers(registrationDto);
 
-                DriverResponse DriverResponse = new DriverResponse();
-                try
-                {
-                    IRestResponse postedUserResponse = PostAPI(_dependencies.DriverUrl, Driver);
-                    DriverResponse = JsonConvert.DeserializeObject<DriverResponse>(postedUserResponse.Content);
+                    DriverDto Driver = new DriverDto
+                    {
+                        User_Id = userResponse.UserId,
+                        Institution_Id = registrationDto.InstitutionId,
+                        avatarUrl = registrationDto.avatarUrl
+                    };
+
+                    DriverResponse DriverResponse = new DriverResponse();
+                    try
+                    {
+                        IRestResponse postedUserResponse = PostAPI(_dependencies.DriversUrl, Driver);
+                        DriverResponse = JsonConvert.DeserializeObject<DriverResponse>(postedUserResponse.Content);
+                    }
+                    catch (Exception)
+                    {
+                        DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
+                        throw;
+                    }
                 }
-                catch (Exception)
+                else
                 {
-                    DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
-                    throw;
-                }
+                    UsersResponse userResponse = PostUsers(registrationDto);
 
+                    IdentitiesDto identityDto = new IdentitiesDto
+                    {
+                        UserId = userResponse.UserId,
+                        Email = registrationDto.Email,
+                        PhoneNumber = registrationDto.PhoneNumber,
+                        Password = registrationDto.Password,
+                        Roles = new RolesDto { Application = application, Privilege = privilege }
+                    };
+                    IdentitiesResponse identityResponse = new IdentitiesResponse();
+                    try
+                    {
+                        IRestResponse postedIdentityResponse = PostAPI(_dependencies.IdentitiesUrl, identityDto);
+                        identityResponse = JsonConvert.DeserializeObject<IdentitiesResponse>(postedIdentityResponse.Content);
+                    }
+                    catch (Exception)
+                    {
+                        DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
+                        throw;
+                    }
+
+                    if (registrationDto.IsDashboard == true)
+                    {
+                        await PostOfficer(userResponse.UserId, identityResponse.IdentityId, institutionId);
+                    }
+                }
             }
             else
             {
-                if (registrationDto == null || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Password) || string.IsNullOrEmpty(registrationDto.Name))
-                    throw new ArgumentNullException(CommonMessage.PassValidData);
-
-                UsersResponse userResponse = PostUsers(registrationDto);
-
-                IdentitiesDto identityDto = new IdentitiesDto
-                {
-                    UserId = userResponse.UserId,
-                    Email = registrationDto.Email,
-                    PhoneNumber = registrationDto.PhoneNumber,
-                    Password = registrationDto.Password,
-                    Roles = new RolesDto { Application = application, Privilege = privilege }
-                };
-                IdentitiesResponse identityResponse = new IdentitiesResponse();
-                try
-                {
-                    IRestResponse postedIdentityResponse = PostAPI(_dependencies.IdentitiesUrl, identityDto);
-                    identityResponse = JsonConvert.DeserializeObject<IdentitiesResponse>(postedIdentityResponse.Content);
-                }
-                catch (Exception)
-                {
-                    DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
-                    throw;
-                }
-
-                if (registrationDto.IsDashboard == true)
-                {
-                    await PostOfficer(userResponse.UserId, identityResponse.IdentityId, institutionId);
-                }
+                throw new ArgumentNullException(CommonMessage.PassValidData);
             }
         }
 
@@ -155,20 +144,6 @@ namespace RegistrationsService.Repository
             IRestResponse postedUserResponse = PostAPI(_dependencies.UsersUrl, userDto);
             return JsonConvert.DeserializeObject<UsersResponse>(postedUserResponse.Content);
         }
-
-        //private DriverResponse PostDriver(RegistrationDto registrationDto)
-        //{
-        //    DriverDto driverDto = new DriverDto
-        //    {
-        //        UserId = userResponse.UserId,
-        //        InstitutionId = registrationDto.InstitutionId,
-        //        avatarUrl = registrationDto.avatarUrl
-
-        //    };
-        //    IRestResponse postedUserResponse = PostAPI(_dependencies.DriverUrl , driverDto);
-        //    return JsonConvert.DeserializeObject<DriverResponse>(postedUserResponse.Content);
-        //}
-
         private Task PostOfficer(string userId, string identityId, string institutionId)
         {
             OfficersDto officersDto = new OfficersDto
@@ -233,6 +208,19 @@ namespace RegistrationsService.Repository
             else
                 baseUri.Query = queryToAppend;
             return baseUri;
+        }
+
+        public InvitationsDto GetInvitation(RegistrationDto registrationDto)
+        {
+            List<InvitationsDto> invitationsDtoList = JsonConvert.DeserializeObject<GetInvitationsResponse>(GetAPI(_dependencies.InvitationsUrl + registrationDto.InvitationId).Content).data;
+            if (!invitationsDtoList.Any())
+                throw new KeyNotFoundException(CommonMessage.InvitationNotFound);
+
+            InvitationsDto invitationsDto = invitationsDtoList.FirstOrDefault();
+            if (string.IsNullOrEmpty(invitationsDto.ApplicationId) || string.IsNullOrEmpty(invitationsDto.PrivilageId))
+                throw new ArgumentNullException(CommonMessage.RoleMissed);
+
+            return invitationsDto;
         }
     }
 }
