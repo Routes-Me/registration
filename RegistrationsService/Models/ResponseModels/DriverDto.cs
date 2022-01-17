@@ -1,4 +1,4 @@
-﻿namespace RegistrationsService.Models.ResponseModels
+﻿namespace RegistrationsService.Models.ResponseModel
 {
     public class DriverDto
     { 
