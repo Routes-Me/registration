@@ -17,6 +17,10 @@ namespace RegistrationsService.Models
     {
         public string UserId { get; set; }
     }
+    public class DriverResponse
+    {
+        public string DriverId { get; set; }
+    }
 
     public class IdentitiesResponse
     {
