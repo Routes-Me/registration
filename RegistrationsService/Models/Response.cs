@@ -1,4 +1,4 @@
-﻿using RegistrationsService.Models.ResponseModel;
+﻿using RegistrationsService.Models.ResponseModels;
 using System.Collections.Generic;
 
 namespace RegistrationsService.Models

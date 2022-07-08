@@ -4,7 +4,7 @@ using RegistrationsService.Abstraction;
 using RegistrationsService.Models;
 using RegistrationsService.Models.Common;
 using RegistrationsService.Models.DBModels;
-using RegistrationsService.Models.ResponseModel;
+using RegistrationsService.Models.ResponseModels;
 using RestSharp;
 using System;
 using System.Collections.Generic;

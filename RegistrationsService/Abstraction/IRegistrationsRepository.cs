@@ -1,4 +1,4 @@
-using RegistrationsService.Models.ResponseModel;
+using RegistrationsService.Models.ResponseModels;
 using System.Threading.Tasks;
 
 namespace RegistrationsService.Abstraction

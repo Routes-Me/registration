@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace RegistrationsService.Models.ResponseModel
+namespace RegistrationsService.Models.ResponseModels
 {
     public class IdentitiesDto
     {

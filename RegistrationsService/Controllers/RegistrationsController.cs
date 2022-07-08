@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using RegistrationsService.Abstraction;
 using RegistrationsService.Models;
-using RegistrationsService.Models.ResponseModel;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using RegistrationsService.Models.ResponseModels;
 
 namespace RegistrationsService.Controllers
 {

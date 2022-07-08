@@ -1,4 +1,4 @@
-﻿namespace RegistrationsService.Models.ResponseModel
+﻿namespace RegistrationsService.Models.ResponseModels
 {
     public class RolesDto
     {

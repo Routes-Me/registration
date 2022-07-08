@@ -1,4 +1,4 @@
-﻿namespace RegistrationsService.Models.ResponseModel
+﻿namespace RegistrationsService.Models.ResponseModels
 {
     public class RegistrationDto
     {
@@ -6,7 +6,7 @@
         public string Password { get; set; }
         public string Name { get; set; }
 
-        #nullable enable
+#nullable enable
 
         public Phone? phone { get; set; }
         public string? PhoneNumber { get; set; }
