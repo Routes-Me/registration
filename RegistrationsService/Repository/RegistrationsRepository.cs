@@ -209,8 +209,17 @@ namespace RegistrationsService.Repository
             }
             if (string.IsNullOrEmpty(registrationDto.Password) && application == "driver")
             {
-                DriverResponse driverResponse = PostDrivers(registrationDto);
-                return;
+                var driverResponse = new DriverResponse();
+                try
+                {
+                    driverResponse = PostDrivers(registrationDto);
+                    return;
+                }
+                catch (Exception ex)
+                {
+                    DeleteAPI(_appSettings.Host + _dependencies.DriversUrl + driverResponse.DriverId);
+                }
+               
             }
 
             if (string.IsNullOrEmpty(registrationDto.Password))
@@ -237,7 +246,6 @@ namespace RegistrationsService.Repository
             catch (Exception)
             {
                 DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
-                DeleteAPI(_appSettings.Host + _dependencies.DriversUrl + driverResponse.UserId);
                 throw;
             }
 
