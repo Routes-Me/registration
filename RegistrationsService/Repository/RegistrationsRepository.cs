@@ -107,7 +107,8 @@ namespace RegistrationsService.Repository
             {
                 User_Id = userResponse.UserId,
                 Institution_Id = registrationDto.InstitutionId,
-                avatarUrl = registrationDto.avatarUrl
+                avatarUrl = registrationDto.avatarUrl,
+                Vehicle_Id = registrationDto.VehicleId
             };
             try
             {
@@ -236,6 +237,7 @@ namespace RegistrationsService.Repository
             catch (Exception)
             {
                 DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
+                DeleteAPI(_appSettings.Host + _dependencies.DriversUrl + driverResponse.UserId);
                 throw;
             }
 
