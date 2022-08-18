@@ -83,21 +83,16 @@ namespace RegistrationsService.Controllers
 
         [HttpPost]
         [Route("registrations/driver-app")]
-        public async Task<IActionResult> RegisterDriverApp(RegistrationDto registrationDto)
+        public async Task<ActionResult<DriverRegistrationResponse>> RegisterDriverApp(RegistrationDto registrationDto)
         {
             try
             {
-                await _registrationsRepository.RegisterDriverApp(registrationDto);
-            }
-            catch (ArgumentNullException ex)
-            {
-                return StatusCode(StatusCodes.Status422UnprocessableEntity, new ErrorResponse{ error = ex.Message });
+                return StatusCode(StatusCodes.Status201Created, await _registrationsRepository.RegisterDriverApp(registrationDto));
             }
             catch (Exception ex)
             {
                 return StatusCode(StatusCodes.Status400BadRequest, new ErrorResponse{ error = ex.Message });
             }
-            return StatusCode(StatusCodes.Status201Created, new SuccessResponse{ message = CommonMessage.DriverAppRegistered });
         }
 
         [HttpPost]

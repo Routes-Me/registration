@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using RegistrationsService.Abstraction;
 using RegistrationsService.Models;
@@ -40,13 +42,13 @@ namespace RegistrationsService.Repository
             await Register(registrationDto, "routes pay", "user");
         }
 
-        public async Task RegisterDriverApp(RegistrationDto registrationDto)
+        public async Task<DriverRegistrationResponse> RegisterDriverApp(RegistrationDto registrationDto)
         {
 
             InvitationsDto invitationsDto = GetInvitation(registrationDto);
 
             registrationDto.InstitutionId = invitationsDto.InstitutionId;
-            await Register(registrationDto, "driver", "user", invitationsDto.InstitutionId);
+            return await Register(registrationDto, "driver-app", "user", invitationsDto.InstitutionId);
         }
 
         public async Task RegisterBusValidators(RegistrationDto registrationDto)
@@ -90,35 +92,92 @@ namespace RegistrationsService.Repository
             {
                 PostAPI(_dependencies.OfficersUrl, officersDto);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userId);
                 DeleteAPI(_appSettings.Host + _dependencies.IdentitiesUrl + identityId);
-                throw;
+                throw ex;
             }
             return Task.CompletedTask;
         }
-        private DriverResponse PostDrivers(RegistrationDto registrationDto)
+        private DriverRegistrationResponse PostDrivers(RegistrationDto registrationDto, string application, string privilege)
         {
             registrationDto.PhoneNumber = registrationDto.phone.number;
+            registrationDto.VerificationToken = registrationDto.phone.VerificationToken;
             UsersResponse userResponse = PostUsers(registrationDto);
+            IdentitiesDto identityDto = new IdentitiesDto
+            {
+                UserId = userResponse.UserId,
+                Email = registrationDto.Email,
+                PhoneNumber = registrationDto.PhoneNumber,
+                Roles = new RolesDto { Application = application, Privilege = privilege }
+            };
+            IdentitiesResponse identityResponse = new IdentitiesResponse();
+            try
+            {
+                IRestResponse postedIdentityResponse = PostAPI(_dependencies.IdentitiesUrl, identityDto);
+                if (postedIdentityResponse.StatusCode != HttpStatusCode.Created)
+                {
+                    throw new HttpListenerException((int)postedIdentityResponse.StatusCode, postedIdentityResponse.Content);
+                }
+                if (postedIdentityResponse.StatusCode == 0)
+                {
+                    throw new HttpListenerException(400, CommonMessage.ConnectionFailure);
+                }
+
+                if (!postedIdentityResponse.IsSuccessful)
+                {
+                    throw new HttpListenerException((int)postedIdentityResponse.StatusCode, postedIdentityResponse.Content);
+                }
+                else
+                    identityResponse = JsonConvert.DeserializeObject<IdentitiesResponse>(postedIdentityResponse.Content);
+            }
+            catch (Exception ex)
+            {
+                DeleteAPI(_appSettings.Host + _dependencies.IdentitiesUrl + identityResponse.IdentityId);
+
+                throw ex;
+            }
 
             DriverDto Driver = new DriverDto
             {
-                User_Id = userResponse.UserId,
-                Institution_Id = registrationDto.InstitutionId,
-                avatarUrl = registrationDto.avatarUrl,
-                Vehicle_Id = registrationDto.VehicleId
+                UserId = userResponse.UserId,
+                InvitationId = registrationDto.InvitationId,
+                Name = registrationDto.Name,
+                AvatarUrl = registrationDto.avatarUrl,
+                VehicleId = registrationDto.VehicleId,
+                PhoneNumber = registrationDto.PhoneNumber,
+                VerificationToken = registrationDto.VerificationToken
             };
             try
             {
+                DriverRegistrationResponse response = new DriverRegistrationResponse();
                 IRestResponse postedDriverResponse = PostAPI(_dependencies.DriversUrl, Driver);
-                return JsonConvert.DeserializeObject<DriverResponse>(postedDriverResponse.Content);
+                if (postedDriverResponse.StatusCode != HttpStatusCode.Created)
+                {
+                    throw new HttpListenerException((int)postedDriverResponse.StatusCode, postedDriverResponse.Content);
+                }
+                if (postedDriverResponse.StatusCode == 0)
+                {
+                    throw new HttpListenerException(400, CommonMessage.ConnectionFailure);
+                }
+
+                if (!postedDriverResponse.IsSuccessful)
+                {
+                    throw new HttpListenerException((int)postedDriverResponse.StatusCode, postedDriverResponse.Content);
+                }
+                else
+                {
+                    dynamic token = GetAPI(_dependencies.DriverIdentitiesUrl, "?phoneNumber=" + Driver.PhoneNumber + "&application=" + application);
+                    response = JsonConvert.DeserializeObject<DriverRegistrationResponse>(token.Content);
+                    return response;
+                }
+
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
-                throw;
+                throw ex;
             }
         }
 
@@ -201,50 +260,62 @@ namespace RegistrationsService.Repository
         }
 
 
-        private async Task Register(RegistrationDto registrationDto, string application, string privilege, string institutionId = "")
+        private async Task<DriverRegistrationResponse> Register(RegistrationDto registrationDto, string application, string privilege, string institutionId = "")
         {
             if (registrationDto == null || string.IsNullOrEmpty(registrationDto.Email) || string.IsNullOrEmpty(registrationDto.Name))
             {
                 throw new ArgumentNullException(CommonMessage.PassValidData);
             }
-            if (string.IsNullOrEmpty(registrationDto.Password) && application == "driver")
+            if (string.IsNullOrEmpty(registrationDto.Password) && application == "driver-app")
             {
-                DriverResponse driverResponse = PostDrivers(registrationDto);
-                return;
+                try
+                {
+                    return PostDrivers(registrationDto, application, privilege);
+                }
+                catch (Exception ex)
+                {
+                    throw ex;
+                    //DeleteAPI(_appSettings.Host + _dependencies.DriversUrl + driverResponse.DriverId);
+                }
             }
 
             if (string.IsNullOrEmpty(registrationDto.Password))
             {
                 throw new ArgumentNullException(CommonMessage.PassValidData);
             }
+            else
+            {
+                UsersResponse userResponse = PostUsers(registrationDto);
 
-            UsersResponse userResponse = PostUsers(registrationDto);
+                IdentitiesDto identityDto = new IdentitiesDto
+                {
+                    UserId = userResponse.UserId,
+                    Email = registrationDto.Email,
+                    PhoneNumber = registrationDto.PhoneNumber,
+                    Password = registrationDto.Password,
+                    Roles = new RolesDto { Application = application, Privilege = privilege }
+                };
+                IdentitiesResponse identityResponse = new IdentitiesResponse();
+                try
+                {
+                    IRestResponse postedIdentityResponse = PostAPI(_dependencies.IdentitiesUrl, identityDto);
+                    identityResponse = JsonConvert.DeserializeObject<IdentitiesResponse>(postedIdentityResponse.Content);
+                }
+                catch (Exception)
+                {
+                    DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
 
-            IdentitiesDto identityDto = new IdentitiesDto
-            {
-                UserId = userResponse.UserId,
-                Email = registrationDto.Email,
-                PhoneNumber = registrationDto.PhoneNumber,
-                Password = registrationDto.Password,
-                Roles = new RolesDto { Application = application, Privilege = privilege }
-            };
-            IdentitiesResponse identityResponse = new IdentitiesResponse();
-            try
-            {
-                IRestResponse postedIdentityResponse = PostAPI(_dependencies.IdentitiesUrl, identityDto);
-                identityResponse = JsonConvert.DeserializeObject<IdentitiesResponse>(postedIdentityResponse.Content);
-            }
-            catch (Exception)
-            {
-                DeleteAPI(_appSettings.Host + _dependencies.UsersUrl + userResponse.UserId);
-                DeleteAPI(_appSettings.Host + _dependencies.DriversUrl + driverResponse.UserId);
-                throw;
+                    throw;
+                }
+
+                if (registrationDto.IsDashboard == true)
+                {
+                    await PostOfficer(userResponse.UserId, identityResponse.IdentityId, institutionId);
+                }
+                return null;
             }
 
-            if (registrationDto.IsDashboard == true)
-            {
-                await PostOfficer(userResponse.UserId, identityResponse.IdentityId, institutionId);
-            }
+
         }
     }
 }

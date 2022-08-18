@@ -7,5 +7,6 @@
         public string OfficersUrl { get; set; }
         public string InvitationsUrl { get; set; }
         public string DriversUrl { get; set; }
+        public string DriverIdentitiesUrl { get; set; }
     }
 }

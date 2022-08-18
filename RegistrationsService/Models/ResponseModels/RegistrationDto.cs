@@ -11,7 +11,7 @@
         public Phone? phone { get; set; }
         public string? PhoneNumber { get; set; }
         public string? avatarUrl { get; set; }
-        public string? invitationToken { get; set; }
+        public string? VerificationToken { get; set; }
         public string? VehicleId { get; set; }
         public string? InvitationId { get; set; }
         public string? InstitutionId { get; set; }
@@ -21,7 +21,7 @@
     public class Phone
     {
         public string? number { get; set; }
-        public string? verificationToken { get; set; }
+        public string? VerificationToken { get; set; }
     }
 
 }
